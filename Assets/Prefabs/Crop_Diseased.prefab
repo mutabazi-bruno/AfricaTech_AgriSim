@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4347058588329004202}
   - component: {fileID: 2638553750709523781}
   m_Layer: 0
-  m_Name: Crop_Healthy
+  m_Name: Crop_Diseased
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -83,8 +83,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -4922617476772045510, guid: f2ababf74e606534d870fbc803b931c6, type: 3}
-  m_Color: {r: 0.13830544, g: 0.7924528, b: 0.1482784, a: 1}
+  m_Sprite: {fileID: -2069660456029034469, guid: f2ababf74e606534d870fbc803b931c6, type: 3}
+  m_Color: {r: 0.9528302, g: 0.27772343, b: 0.23820755, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -141,4 +141,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2585d6df8af924c459b85d76d4a0899b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Crop
-  cropStatus: Healthy Crop - Optimal Nitrogen Levels
+  cropStatus: 'CRITICAL - Fungal Infection Detected. Solution: Apply organic bio-fungicide
+    immediately.'
