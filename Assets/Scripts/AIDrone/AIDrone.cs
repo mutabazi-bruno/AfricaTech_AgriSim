@@ -10,7 +10,7 @@ public class AIDrone : MonoBehaviour
 
     void Start()
     {
-        // Remember where the drone started on the field
+        
         startPosition = transform.position;
     }
 
