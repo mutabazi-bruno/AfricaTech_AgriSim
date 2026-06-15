@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
-using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     private PlayerInput playerInput;
     private InputAction moveAction;
+    private Rigidbody2D rb; // <-- Reference to our new physics component
 
     [Header("Scanner Settings")]
     public LineRenderer lineRenderer;
@@ -19,8 +19,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("UI Dashboard Panels")]
     public TextMeshProUGUI farmerStatusText;
-    public GameObject droneReportPanel; // Drag your popup UI box panel here
-    public TextMeshProUGUI droneReportText; // Drag the text inside that box here
+    public GameObject droneReportPanel; 
+    public TextMeshProUGUI droneReportText; 
 
     void Awake()
     {
@@ -31,32 +31,35 @@ public class PlayerController : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
+        rb = GetComponent<Rigidbody2D>(); // <-- Grab the Rigidbody at start
         
-        if (lineRenderer != null)
-        {
-            lineRenderer.enabled = false;
-        }
-
+        if (lineRenderer != null) lineRenderer.enabled = false;
         if (droneReportPanel != null) droneReportPanel.SetActive(false);
     }
 
-    void Update()
+    void FixedUpdate() // <-- Physics calculations should run inside FixedUpdate!
     {
-        // 1. Movement logic
+        // 1. Read movement input
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
-        Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0f);
-        transform.Translate(movement * moveSpeed * Time.deltaTime, Space.World);
+        
+        // 2. Move the player smoothly using Physics forces (prevents walking through walls)
+        Vector2 targetPosition = rb.position + (moveInput * moveSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(targetPosition);
 
+        // 3. Rotate the visual sprite to face direction
         if (moveInput != Vector2.zero)
         {
             float targetAngle = Mathf.Atan2(moveInput.y, moveInput.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0f, 0f, targetAngle);
         }
+    }
 
-        // 2. Read Toggle Input (Spacebar)
+    void Update()
+    {
+        // Keep input reading and scanning inside normal Update
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            isScanning = !isScanning; // Toggle scan mode on/off
+            isScanning = !isScanning;
         }
 
         if (isScanning)
@@ -88,12 +91,14 @@ public class PlayerController : MonoBehaviour
             {
                 if (crop.cropStatus.Contains("CRITICAL"))
                 {
-                    SetLaserColor(Color.red); // Sick plant turns laser RED
+                    lineRenderer.startColor = Color.red;
+                    lineRenderer.endColor = Color.red;
                     if (farmerStatusText != null) farmerStatusText.text = "AI Warning: " + crop.cropStatus;
                 }
                 else
                 {
-                    SetLaserColor(Color.green); // Healthy plant turns laser GREEN
+                    lineRenderer.startColor = Color.green;
+                    lineRenderer.endColor = Color.green;
                     if (farmerStatusText != null) farmerStatusText.text = "AI Analytics: " + crop.cropStatus;
                 }
             }
@@ -102,40 +107,30 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 maxDistancePoint = scanPoint.position + (transform.right * scanDistance);
             lineRenderer.SetPosition(1, maxDistancePoint);
-            SetLaserColor(Color.white); // Empty space stays WHITE
+            lineRenderer.startColor = Color.white;
+            lineRenderer.endColor = Color.white;
             if (farmerStatusText != null) farmerStatusText.text = "AI Status: Scanning empty sector...";
         }
     }
 
-    void SetLaserColor(Color color)
-    {
-        lineRenderer.startColor = color;
-        lineRenderer.endColor = color;
-    }
-
-    // Called automatically by the drone when it finishes a complete lap!
     public void DisplayDroneReport(int healthyCount, int sickCount)
     {
         if (droneReportPanel == null || droneReportText == null) return;
-
-        // Turn off player scanning while menu is open
         isScanning = false;
         if (lineRenderer != null) lineRenderer.enabled = false;
 
-        // Fill out the text report inside the pop-up panel box
         droneReportText.text = $"<b><color=#00FF00>AI TELEMETRY LAP COMPLETE</color></b>\n\n" +
                                $"Healthy Crops Verified: {healthyCount}\n" +
                                $"Infections Detected: <color=red>{sickCount}</color>\n\n" +
                                $"Deploy the farmer to clear flagged targets!";
         
-        droneReportPanel.SetActive(true); // Pop up on screen
-        Time.timeScale = 0f; // Pause game physics until user accepts
+        droneReportPanel.SetActive(true);
+        Time.timeScale = 0f;
     }
 
-    // Connect this function to a UI Button inside your pop-up box panel
     public void CloseDroneReport()
     {
         if (droneReportPanel != null) droneReportPanel.SetActive(false);
-        Time.timeScale = 1f; // Unpause the game simulation
+        Time.timeScale = 1f;
     }
 }
