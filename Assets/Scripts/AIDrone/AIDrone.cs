@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic; // <-- Required to use Lists!
+using System.Collections.Generic; // Need this for lists
 
 public class AIDrone : MonoBehaviour
 {
@@ -14,7 +14,7 @@ public class AIDrone : MonoBehaviour
     private int healthyPlantsFound = 0;
     private int sickPlantsFound = 0;
 
-    // 🚨 NEW: Keeps track of unique plant IDs so it counts every individual plant once per lap!
+    // Tracks which plants we've already scanned this lap
     private List<int> scannedPlantIDs = new List<int>();
 
     void Start()
@@ -51,14 +51,13 @@ public class AIDrone : MonoBehaviour
         {
             PlayerController.instance.DisplayDroneReport(healthyPlantsFound, sickPlantsFound);
             
-            // 🚨 RESET EVERYTHING FOR THE NEXT LAP:
+            // Reset counts for next patrol
             healthyPlantsFound = 0;
             sickPlantsFound = 0;
-            scannedPlantIDs.Clear(); // Wipe the list clean so it can scan them again next pass!
+            scannedPlantIDs.Clear(); // Clear scanned list for next pass
         }
 
-        // --- Downward Multi-Target Scan Analysis ---
-        // We use RaycastAll to pierce through multiple plants sitting in the same column!
+        // Scan downward for crops
         RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, Vector2.down, scanDownDistance);
         Debug.DrawRay(transform.position, Vector2.down * scanDownDistance, Color.yellow);
 
@@ -71,10 +70,10 @@ public class AIDrone : MonoBehaviour
                 {
                     int plantID = hit.collider.gameObject.GetHashCode();
 
-                    // If we haven't counted this specific plant on this flight pass yet
+                    // Only count each plant once per pass
                     if (!scannedPlantIDs.Contains(plantID))
                     {
-                        scannedPlantIDs.Add(plantID); // Mark it as counted!
+                        scannedPlantIDs.Add(plantID); // Record this plant as scanned
 
                         if (crop.cropStatus.Contains("Fungal") || crop.cropStatus.Contains("Infection"))
                         {

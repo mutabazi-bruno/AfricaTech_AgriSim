@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI; // <-- Required for Sliders and Toggles!
+using UnityEngine.UI; // Need this for UI controls
 
 public class MainMenuController : MonoBehaviour
 {
@@ -38,8 +38,7 @@ public class MainMenuController : MonoBehaviour
         Debug.Log("Game Quit Checked!");
     }
 
-    // --- Settings Panel Logic ---
-
+    // Settings panel methods
     public void OpenSettings()
     {
         if (settingsPanel != null) settingsPanel.SetActive(true);
@@ -52,13 +51,13 @@ public class MainMenuController : MonoBehaviour
 
     public void SetVolume(float value)
     {
-        // Changes global engine volume between 0.0 and 1.0
+        // Set global volume
         AudioListener.volume = value; 
     }
 
     public void SetMute(bool isMuted)
     {
-        // Pauses/Unpauses all game audio instantly
+        // Toggle game audio
         AudioListener.pause = isMuted; 
     }
 }

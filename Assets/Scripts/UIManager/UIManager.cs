@@ -11,7 +11,7 @@ public class UIManager : MonoBehaviour
 
     void Awake()
     {
-        // This sets up a clean "Singleton" pattern so any script can easily send data here
+        // Singleton pattern for easy access
         if (instance == null) instance = this;
         else Destroy(gameObject);
     }
@@ -28,7 +28,7 @@ public class UIManager : MonoBehaviour
         farmerUiText.text = "Local Scan: " + status;
     }
 
-    // Called by the Autonomous Drone script wirelessly!
+    // Called by the drone controller
     public void UpdateDroneFeed(string status)
     {
         droneUiText.text = "LIVE DRONE TELEMETRY: " + status;

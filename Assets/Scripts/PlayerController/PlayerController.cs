@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     private PlayerInput playerInput;
     private InputAction moveAction;
-    private Rigidbody2D rb; // <-- Reference to our new physics component
+    private Rigidbody2D rb; // Physics component
 
     [Header("Scanner Settings")]
     public LineRenderer lineRenderer;
@@ -32,22 +32,22 @@ public class PlayerController : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
-        rb = GetComponent<Rigidbody2D>(); // <-- Grab the Rigidbody at start
+        rb = GetComponent<Rigidbody2D>();
         
         if (lineRenderer != null) lineRenderer.enabled = false;
         if (droneReportPanel != null) droneReportPanel.SetActive(false);
     }
 
-    void FixedUpdate() // <-- Physics calculations should run inside FixedUpdate!
+    void FixedUpdate()
     {
-        // 1. Read movement input
+        // Get movement input
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
         
-        // 2. Move the player smoothly using Physics forces (prevents walking through walls)
+        // Move player using physics
         Vector2 targetPosition = rb.position + (moveInput * moveSpeed * Time.fixedDeltaTime);
         rb.MovePosition(targetPosition);
 
-        // 3. Rotate the visual sprite to face direction
+        // Rotate sprite to face movement direction
         if (moveInput != Vector2.zero)
         {
             float targetAngle = Mathf.Atan2(moveInput.y, moveInput.x) * Mathf.Rad2Deg;
@@ -90,23 +90,23 @@ public class PlayerController : MonoBehaviour
         
         if (crop != null)
         {
-            //  If it's a fungal infection, make it RED instantly
+            // Check for fungal infection
             if (crop.cropStatus.Contains("Fungal") || crop.cropStatus.Contains("Infection"))
             {
-                SetLaserColor(Color.red); // Turns laser RED
+                SetLaserColor(Color.red); // Red for infection
                 if (farmerStatusText != null) farmerStatusText.text = crop.cropStatus;
             }
-            //  If it's healthy, make it GREEN
+            // Healthy plant
             else
             {
-                SetLaserColor(Color.green); // Turns laser GREEN
+                SetLaserColor(Color.green); // Green for healthy
                 if (farmerStatusText != null) farmerStatusText.text = crop.cropStatus;
             }
         }
     }
     else
     {
-        //  Stays WHITE
+        // No plant detected
         Vector3 maxDistancePoint = scanPoint.position + (transform.right * scanDistance);
         lineRenderer.SetPosition(1, maxDistancePoint);
         SetLaserColor(Color.white); 
@@ -145,10 +145,10 @@ void SetLaserColor(Color color)
     }
     public void ReturnToMainMenu()
 {
-    // Make sure the game is unpaused before loading the menu scene
+    // Unpause game before loading menu
     Time.timeScale = 1f; 
     
-    // Loads scene Index 0 
+    // Load main menu scene
     SceneManager.LoadScene(0); 
 }
 }
