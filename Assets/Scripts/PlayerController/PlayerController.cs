@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -133,4 +134,12 @@ public class PlayerController : MonoBehaviour
         if (droneReportPanel != null) droneReportPanel.SetActive(false);
         Time.timeScale = 1f;
     }
+    public void ReturnToMainMenu()
+{
+    // Make sure the game is unpaused before loading the menu scene
+    Time.timeScale = 1f; 
+    
+    // Loads scene Index 0 
+    SceneManager.LoadScene(0); 
+}
 }
