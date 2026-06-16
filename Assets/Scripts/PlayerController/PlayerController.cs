@@ -75,44 +75,53 @@ public class PlayerController : MonoBehaviour
     }
 
     void FireAIScanner()
+{
+    if (scanPoint == null || lineRenderer == null) return;
+
+    lineRenderer.enabled = true;
+    lineRenderer.SetPosition(0, scanPoint.position);
+
+    RaycastHit2D hit = Physics2D.Raycast(scanPoint.position, transform.right, scanDistance);
+
+    if (hit.collider != null)
     {
-        if (scanPoint == null || lineRenderer == null) return;
-
-        lineRenderer.enabled = true;
-        lineRenderer.SetPosition(0, scanPoint.position);
-
-        RaycastHit2D hit = Physics2D.Raycast(scanPoint.position, transform.right, scanDistance);
-
-        if (hit.collider != null)
+        lineRenderer.SetPosition(1, hit.point);
+        Crop crop = hit.collider.GetComponent<Crop>();
+        
+        if (crop != null)
         {
-            lineRenderer.SetPosition(1, hit.point);
-            Crop crop = hit.collider.GetComponent<Crop>();
-            
-            if (crop != null)
+            //  If it's a fungal infection, make it RED instantly
+            if (crop.cropStatus.Contains("Fungal") || crop.cropStatus.Contains("Infection"))
             {
-                if (crop.cropStatus.Contains("CRITICAL"))
-                {
-                    lineRenderer.startColor = Color.red;
-                    lineRenderer.endColor = Color.red;
-                    if (farmerStatusText != null) farmerStatusText.text = "AI Warning: " + crop.cropStatus;
-                }
-                else
-                {
-                    lineRenderer.startColor = Color.green;
-                    lineRenderer.endColor = Color.green;
-                    if (farmerStatusText != null) farmerStatusText.text = "AI Analytics: " + crop.cropStatus;
-                }
+                SetLaserColor(Color.red); // Turns laser RED
+                if (farmerStatusText != null) farmerStatusText.text = crop.cropStatus;
+            }
+            //  If it's healthy, make it GREEN
+            else
+            {
+                SetLaserColor(Color.green); // Turns laser GREEN
+                if (farmerStatusText != null) farmerStatusText.text = crop.cropStatus;
             }
         }
-        else
-        {
-            Vector3 maxDistancePoint = scanPoint.position + (transform.right * scanDistance);
-            lineRenderer.SetPosition(1, maxDistancePoint);
-            lineRenderer.startColor = Color.white;
-            lineRenderer.endColor = Color.white;
-            if (farmerStatusText != null) farmerStatusText.text = "AI Status: Scanning empty sector...";
-        }
     }
+    else
+    {
+        //  Stays WHITE
+        Vector3 maxDistancePoint = scanPoint.position + (transform.right * scanDistance);
+        lineRenderer.SetPosition(1, maxDistancePoint);
+        SetLaserColor(Color.white); 
+        if (farmerStatusText != null) farmerStatusText.text = "AI Status: Scanning empty sector...";
+    }
+}
+
+void SetLaserColor(Color color)
+{
+    if (lineRenderer != null)
+    {
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+    }
+}
 
     public void DisplayDroneReport(int healthyCount, int sickCount)
     {

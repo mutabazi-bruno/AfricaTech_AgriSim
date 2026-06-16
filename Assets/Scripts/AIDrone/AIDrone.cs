@@ -1,10 +1,11 @@
 using UnityEngine;
+using System.Collections.Generic; // <-- Required to use Lists!
 
 public class AIDrone : MonoBehaviour
 {
     public float speed = 2f;
     public float patrolDistance = 4f;
-    public float scanDownDistance = 2f;
+    public float scanDownDistance = 3.5f;
     
     private Vector3 startPosition;
     private bool movingRight = true;
@@ -12,7 +13,9 @@ public class AIDrone : MonoBehaviour
     // Analytics counters
     private int healthyPlantsFound = 0;
     private int sickPlantsFound = 0;
-    private GameObject lastScannedCrop;
+
+    // 🚨 NEW: Keeps track of unique plant IDs so it counts every individual plant once per lap!
+    private List<int> scannedPlantIDs = new List<int>();
 
     void Start()
     {
@@ -23,8 +26,6 @@ public class AIDrone : MonoBehaviour
     {
         float rightBoundary = startPosition.x + patrolDistance;
         float leftBoundary = startPosition.x - patrolDistance;
-
-        // Track turning frames to know when a round trip completes
         bool justTurned = false;
 
         if (movingRight)
@@ -33,7 +34,7 @@ public class AIDrone : MonoBehaviour
             if (transform.position.x >= rightBoundary)
             {
                 movingRight = false;
-                justTurned = true; // Finished heading right
+                justTurned = true;
             }
         }
         else
@@ -42,39 +43,50 @@ public class AIDrone : MonoBehaviour
             if (transform.position.x <= leftBoundary)
             {
                 movingRight = true;
-                justTurned = true; // Finished heading left (Complete round trip!)
+                justTurned = true;
             }
         }
 
-        // If drone completed its patrol lap, display the data report popup!
         if (justTurned && (healthyPlantsFound > 0 || sickPlantsFound > 0))
         {
             PlayerController.instance.DisplayDroneReport(healthyPlantsFound, sickPlantsFound);
-            // Reset counters for the next flight session
+            
+            // 🚨 RESET EVERYTHING FOR THE NEXT LAP:
             healthyPlantsFound = 0;
             sickPlantsFound = 0;
+            scannedPlantIDs.Clear(); // Wipe the list clean so it can scan them again next pass!
         }
 
-        // Downward Scan Analysis
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, scanDownDistance);
+        // --- Downward Multi-Target Scan Analysis ---
+        // We use RaycastAll to pierce through multiple plants sitting in the same column!
+        RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, Vector2.down, scanDownDistance);
         Debug.DrawRay(transform.position, Vector2.down * scanDownDistance, Color.yellow);
 
-        if (hit.collider != null)
+        foreach (RaycastHit2D hit in hits)
         {
-            Crop crop = hit.collider.GetComponent<Crop>();
-            if (crop != null && hit.collider.gameObject != lastScannedCrop)
+            if (hit.collider != null)
             {
-                lastScannedCrop = hit.collider.gameObject; // Don't count the same plant twice in one pass
+                Crop crop = hit.collider.GetComponent<Crop>();
+                if (crop != null)
+                {
+                    int plantID = hit.collider.gameObject.GetHashCode();
 
-                if (crop.cropStatus.Contains("CRITICAL"))
-                    sickPlantsFound++;
-                else
-                    healthyPlantsFound++;
+                    // If we haven't counted this specific plant on this flight pass yet
+                    if (!scannedPlantIDs.Contains(plantID))
+                    {
+                        scannedPlantIDs.Add(plantID); // Mark it as counted!
+
+                        if (crop.cropStatus.Contains("Fungal") || crop.cropStatus.Contains("Infection"))
+                        {
+                            sickPlantsFound++;
+                        }
+                        else
+                        {
+                            healthyPlantsFound++;
+                        }
+                    }
+                }
             }
-        }
-        else
-        {
-            lastScannedCrop = null;
         }
     }
 }
