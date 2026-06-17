@@ -23,7 +23,7 @@ Crop diseases spread fast and farmers often don't notice until it's too late. Th
 
 ## ⚙️ Features
 
-- **Laser Scanner** — Hold Space to scan crops. The beam turns green for healthy plants and red for diseased ones
+- **Laser Scanner** — Click Space to scan crops. The beam turns green for healthy plants and red for diseased ones
 - **Autonomous Drone** — Flies over crops automatically, counts plants, and sends data to the HUD
 - **Disease Alerts** — When the drone detects infection, a warning pops up on screen instantly
 - **Animal Enclosure** — Animated cattle and sheep with idle and walking animations
