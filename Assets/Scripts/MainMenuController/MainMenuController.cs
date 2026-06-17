@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI; // Need this for UI controls
+using UnityEngine.UI; 
 
 public class MainMenuController : MonoBehaviour
 {

@@ -1,6 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic; // Need this for lists
-
+using System.Collections.Generic; 
 public class AIDrone : MonoBehaviour
 {
     public float speed = 2f;
